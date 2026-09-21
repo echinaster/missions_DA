@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Douaisis Agglo • Diagnostic Processus & IA</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; }
+    body { background: #fdf2f7; color: #1e293b; padding: 24px 16px; display: flex; justify-content: center; }
+
+    .form-card { background: #ffffff; width: 100%; max-width: 650px; border-radius: 16px; border: 1px solid #fad0e4; box-shadow: 0 10px 25px -5px rgba(142, 28, 86, 0.08); overflow: hidden; }
+    .form-header { background: #8e1c56; color: #ffffff; padding: 24px; text-align: left; }
+    .form-header h1 { font-size: 18px; font-weight: 800; letter-spacing: 0.5px; }
+    .form-header p { font-size: 12px; color: #fce7f1; margin-top: 4px; line-height: 1.4; }
+
+    .form-body { padding: 24px; display: flex; flex-direction: column; gap: 20px; }
+    .section-title { font-size: 12px; font-weight: 800; color: #751445; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 2px solid #fce7f1; padding-bottom: 6px; }
+
+    .form-group { display: flex; flex-direction: column; gap: 5px; }
+    .form-group label { font-size: 12px; font-weight: 700; color: #334155; }
+    .form-control { border: 1.5px solid #cbd5e1; border-radius: 8px; padding: 10px 12px; font-size: 13px; outline: none; background: #fff; transition: border-color 0.2s; }
+    .form-control:focus { border-color: #8e1c56; }
+
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    @media (max-width: 500px) { .grid-2 { grid-template-columns: 1fr; } }
+
+    .check-card { display: flex; align-items: center; gap: 8px; background: #f8fafc; border: 1.5px solid #e2e8f0; border-radius: 8px; padding: 9px 12px; cursor: pointer; user-select: none; font-size: 12px; }
+    .check-card:hover { background: #f1f5f9; border-color: #cbd5e1; }
+    .check-card input { accent-color: #8e1c56; }
+
+    .frictions-box { background: #fffbeb; border: 1.5px solid #fef3c7; border-radius: 12px; padding: 12px; display: flex; flex-direction: column; gap: 8px; }
+    .ai-box { background: #fdf2f7; border: 1.5px solid #fce7f1; border-radius: 12px; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+
+    .btn-submit { background: #8e1c56; color: #ffffff; border: none; border-radius: 10px; padding: 14px; font-size: 14px; font-weight: 800; cursor: pointer; transition: background 0.2s; box-shadow: 0 4px 10px rgba(142, 28, 86, 0.2); }
+    .btn-submit:hover { background: #751445; }
+    .btn-submit:disabled { background: #94a3b8; cursor: not-allowed; }
+
+    .alert { display: none; padding: 14px; border-radius: 10px; font-size: 13px; font-weight: bold; text-align: center; margin-top: 10px; }
+    .alert-success { background: #ecfdf5; border: 1.5px solid #a7f3d0; color: #065f46; }
+    .alert-error { background: #fff1f2; border: 1.5px solid #fecdd3; color: #9f1239; }
+  </style>
+</head>
+<body>
+
+<div class="form-card">
+  <div class="form-header">
+    <h1>Douaisis Agglo • Diagnostic Processus & IA</h1>
+    <p>Identifiez les missions de votre service, les points de friction terrain et les opportunités d'assistance.</p>
+  </div>
+
+  <div class="form-body">
+    <!-- 1. Périmètre -->
+    <div class="section-title">1. Périmètre de la Mission</div>
+    
+    <div class="form-group">
+      <label>Direction de rattachement *</label>
+      <select id="inputDirection" class="form-control">
+        <option value="">Chargement des directions...</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label>Intitulé de la mission / tâche *</label>
+      <input type="text" id="inputMission" class="form-control" placeholder="Ex: Instruction des demandes d'aides" required />
+    </div>
+
+    <div class="grid-2">
+      <div class="form-group">
+        <label>Acteur en charge</label>
+        <input type="text" id="inputActor" class="form-control" placeholder="Ex: Agent d'accueil, Instructeur" />
+      </div>
+      <div class="form-group">
+        <label>Déclencheur / Point d'entrée</label>
+        <select id="inputTrigger" class="form-control"></select>
+      </div>
+    </div>
+
+    <!-- 2. Flux & Données -->
+    <div class="section-title">2. Flux & Données</div>
+
+    <div class="form-group">
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <label>Données manipulées (input)</label>
+        <label style="font-size:11px; font-weight:700; color:#e11d48; cursor:pointer;">
+          <input type="checkbox" id="inputSensitive"> 🔒 Données sensibles / RGPD
+        </label>
+      </div>
+      <div id="containerInputs" class="grid-2"></div>
+    </div>
+
+    <div class="grid-2">
+      <div class="form-group">
+        <label>Outils actuels utilisés</label>
+        <input type="text" id="inputTool" class="form-control" placeholder="Ex: Outlook, Excel, Logiciel métier" />
+        <label style="font-size:11px; margin-top:3px; cursor:pointer; color:#64748b;">
+          <input type="checkbox" id="inputToolExt"> Outil externe non maîtrisé
+        </label>
+      </div>
+      <div class="form-group">
+        <label>Livrable ou suite produite (output)</label>
+        <input type="text" id="inputNext" class="form-control" placeholder="Ex: Arrêté signé, virement, notification" />
+      </div>
+    </div>
+
+    <!-- 3. Frictions -->
+    <div class="section-title">3. Points de Friction rencontrés</div>
+
+    <div class="frictions-box">
+      <div id="containerFrictions" class="grid-2"></div>
+      <input type="text" id="fricAutre" class="form-control" style="margin-top:6px;" placeholder="Autre friction spécifique (optionnel)..." />
+    </div>
+
+    <!-- 4. Piste IA -->
+    <div class="section-title">4. Intention & Opportunité IA</div>
+
+    <div class="ai-box">
+      <label style="font-size:13px; font-weight:800; color:#751445; cursor:pointer;">
+        <input type="checkbox" id="inputAi"> 💡 Identifier un levier IA sur cette mission
+      </label>
+      <div class="grid-2">
+        <div class="form-group">
+          <label>Rôle principal visé</label>
+          <select id="inputAiRole" class="form-control"></select>
+        </div>
+        <div class="form-group">
+          <label>Gain de temps estimé (h/mois)</label>
+          <input type="number" id="inputAiGain" step="0.5" class="form-control" placeholder="Ex: 4" />
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Supervision AI Act requise</label>
+        <select id="inputAiSup" class="form-control"></select>
+      </div>
+    </div>
+
+    <button id="btnSubmit" class="btn-submit" onclick="submitToGrist()">Transmettre le diagnostic</button>
+    <div id="alertSuccess" class="alert alert-success">✓ Votre mission a été transmise avec succès dans la cartographie !</div>
+    <div id="alertError" class="alert alert-error"></div>
+  </div>
+</div>
+
+<script>
+  const GRIST_HOST = "https://grist.incubateur.anct.gouv.fr";
+  const DOC_ID = "aasuJBar36th";
+
+  // Vos 19 directions exactes (garanties d'affichage immédiat)
+  const FALLBACK_DIRECTIONS = [
+    "Transition Agricole et Alimentaire",
+    "Archéologie préventive",
+    "Equipements culturels et de Loisirs",
+    "Affaires juridiques",
+    "Contrôle de gestion",
+    "Ressources humaines",
+    "Développement économique",
+    "Technologies de l'information",
+    "Tourisme",
+    "Communication",
+    "Protection de la donnée",
+    "Grands projets",
+    "Cycle de l'eau",
+    "Déchets - propreté",
+    "Aménagement, voiries, espaces naturels",
+    "Transition écologique, mobilité, qualité",
+    "Cohésion sociale",
+    "Habitat Parc Privé",
+    "Habitat Parc Social"
+  ];
+
+  const FALLBACK_TRIGGERS = [
+    "Citoyen / Usager",
+    "Entreprise / Partenaire",
+    "Autre service interne",
+    "Échéance calendaire",
+    "Autre"
+  ];
+
+  const FALLBACK_INPUTS = [
+    "Email, texte libre, note manuscrite",
+    "Document standardisé (Cerfa, formulaire)",
+    "Tableur, chiffres et dates",
+    "Pièces justificatives (justificatifs, factures)"
+  ];
+
+  const FALLBACK_FRICTIONS = [
+    "⏱️ Lenteur",
+    "🔁 Tâche répétitive",
+    "🔍 Recherche d'information",
+    "⚠️ Risque d'erreur",
+    "⏳ Relances nécessaires",
+    "❓ Sollicitations fréquentes",
+    "📉 Manque de traçabilité",
+    "🌊 Surcharge saisonnière"
+  ];
+
+  const FALLBACK_ROLES = [
+    "Chercher de l'information",
+    "Synthétiser l'information",
+    "Automatiser des tâches répétitives",
+    "Aider à décider / Contrôler",
+    "S'inspirer & Rédiger",
+    "S'outiller / Gagner du temps"
+  ];
+
+  const FALLBACK_SUPERVISIONS = [
+    "Transparence avec vérification humaine",
+    "Aide à la décision avec vérification obligatoire",
+    "Transparence en automatique",
+    "Décision automatisée"
+  ];
+
+  // 1. Initialisation dynamique au chargement
+  window.addEventListener('DOMContentLoaded', async () => {
+    // Remplissage initial de sécurité
+    populateSelect('inputDirection', FALLBACK_DIRECTIONS);
+    populateSelect('inputTrigger', FALLBACK_TRIGGERS);
+    populateCheckboxes('containerInputs', FALLBACK_INPUTS, 'data-check');
+    populateCheckboxes('containerFrictions', FALLBACK_FRICTIONS, 'fric-check');
+    populateSelect('inputAiRole', FALLBACK_ROLES);
+    populateSelect('inputAiSup', FALLBACK_SUPERVISIONS);
+
+    // Tentative de récupération en direct des choix configurés dans Grist
+    await fetchLiveChoices();
+  });
+
+  function populateSelect(elemId, list) {
+    const el = document.getElementById(elemId);
+    if (!el) return;
+    el.innerHTML = list.map(item => `<option value="${escapeHtml(item)}">${escapeHtml(item)}</option>`).join('');
+  }
+
+  function populateCheckboxes(containerId, list, className) {
+    const el = document.getElementById(containerId);
+    if (!el) return;
+    el.innerHTML = list.map(item => `
+      <label class="check-card">
+        <input type="checkbox" class="${className}" value="${escapeHtml(item)}">
+        <span>${escapeHtml(item)}</span>
+      </label>
+    `).join('');
+  }
+
+  // Récupère les colonnes Choice/ChoiceList depuis l'API Grist
+  async function fetchLiveChoices() {
+    try {
+      // 1. Choix Direction depuis la table Missions
+      const resMissions = await fetch(`${GRIST_HOST}/api/docs/${DOC_ID}/tables/Missions/columns`);
+      if (resMissions.ok) {
+        const data = await resMissions.json();
+        const dirCol = data.columns.find(c => c.id === 'Direction');
+        if (dirCol && dirCol.fields && dirCol.fields.widgetOptions) {
+          const opts = JSON.parse(dirCol.fields.widgetOptions);
+          if (opts.choices && opts.choices.length > 0) {
+            populateSelect('inputDirection', opts.choices);
+          }
+        }
+      }
+
+      // 2. Choix depuis la table Diagnostics
+      const resDiag = await fetch(`${GRIST_HOST}/api/docs/${DOC_ID}/tables/Diagnostics/columns`);
+      if (resDiag.ok) {
+        const data = await resDiag.json();
+        data.columns.forEach(c => {
+          if (!c.fields || !c.fields.widgetOptions) return;
+          try {
+            const opts = JSON.parse(c.fields.widgetOptions);
+            if (opts.choices && opts.choices.length > 0) {
+              if (c.id === 'Frictions') populateCheckboxes('containerFrictions', opts.choices, 'fric-check');
+              if (c.id === 'input') populateCheckboxes('containerInputs', opts.choices, 'data-check');
+              if (c.id === 'Declencheur_s_') populateSelect('inputTrigger', opts.choices);
+              if (c.id === 'Role_de_l_IA') populateSelect('inputAiRole', opts.choices);
+              if (c.id === 'IA_Supervision') populateSelect('inputAiSup', opts.choices);
+            }
+          } catch(err) {}
+        });
+      }
+    } catch (e) {
+      console.log("Utilisation des listes par défaut (réseau non disponible)");
+    }
+  }
+
+  // 2. Envoi vers Grist
+ async function submitToGrist() {
+    const mission = document.getElementById('inputMission').value.trim();
+    if (!mission) {
+      alert("Veuillez renseigner l'intitulé de la mission.");
+      return;
+    }
+
+    const direction = document.getElementById('inputDirection').value;
+    const btn = document.getElementById('btnSubmit');
+    const alertSuccess = document.getElementById('alertSuccess');
+    const alertError = document.getElementById('alertError');
+    alertSuccess.style.display = 'none';
+    alertError.style.display = 'none';
+    btn.disabled = true;
+    btn.textContent = "Transmission en cours...";
+
+    // Récupération des données sélectionnées
+    const selectedData = ['L'];
+    document.querySelectorAll('.data-check:checked').forEach(c => selectedData.push(c.value));
+
+    const selectedFrics = ['L'];
+    document.querySelectorAll('.fric-check:checked').forEach(c => selectedFrics.push(c.value));
+
+    try {
+      // -------------------------------------------------------------
+      // ÉTAPE 1 : Créer la mission dans la table 'Missions'
+      // -------------------------------------------------------------
+      const missionPayload = {
+        records: [{
+          fields: {
+            Nom_Mission: mission,
+            Direction: direction
+          }
+        }]
+      };
+
+      const resMission = await fetch(`${GRIST_HOST}/api/docs/${DOC_ID}/tables/Missions/records`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(missionPayload)
+      });
+
+      if (!resMission.ok) {
+        const errJson = await resMission.json();
+        throw new Error("Erreur table Missions : " + (errJson.error || resMission.status));
+      }
+
+      const missionData = await resMission.json();
+      const createdMissionId = missionData.records[0].id; // L'identifiant généré par Grist
+
+      // -------------------------------------------------------------
+      // ÉTAPE 2 : Créer le diagnostic relié dans la table 'Diagnostics'
+      // -------------------------------------------------------------
+      const diagPayload = {
+        records: [{
+          fields: {
+            Missions: createdMissionId,          // Liaison de clé étrangère
+            Direction: direction,
+            Intitule_de_la_tache: mission,
+            Acteur_s_: document.getElementById('inputActor').value.trim(),
+            Declencheur_s_: ['L', document.getElementById('inputTrigger').value],
+            input: selectedData,
+            Donnees_sensibles: document.getElementById('inputSensitive').checked,
+            Frictions: selectedFrics,
+            Autres_frictions: document.getElementById('fricAutre').value.trim(),
+            Outil_s_actuel_s_: document.getElementById('inputTool').value.trim(),
+            Outil_s_externe_s_: document.getElementById('inputToolExt').checked,
+            output: document.getElementById('inputNext').value.trim(),
+            IA: document.getElementById('inputAi').checked,
+            Role_de_l_IA: ['L', document.getElementById('inputAiRole').value],
+            IA_Supervision: document.getElementById('inputAiSup').value,
+            Gain_attendu_en_heure_: parseFloat(document.getElementById('inputAiGain').value) || 0.0
+          }
+        }]
+      };
+
+      const resDiag = await fetch(`${GRIST_HOST}/api/docs/${DOC_ID}/tables/Diagnostics/records`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(diagPayload)
+      });
+
+      if (!resDiag.ok) {
+        const errJson = await resDiag.json();
+        throw new Error("Erreur table Diagnostics : " + (errJson.error || resDiag.status));
+      }
+
+      // Succès complet
+      alertSuccess.style.display = 'block';
+      
+      // Réinitialisation des champs
+      document.getElementById('inputMission').value = '';
+      document.getElementById('inputActor').value = '';
+      document.getElementById('inputTool').value = '';
+      document.getElementById('inputNext').value = '';
+      document.getElementById('fricAutre').value = '';
+      document.getElementById('inputAiGain').value = '';
+      document.getElementById('inputAi').checked = false;
+      document.getElementById('inputSensitive').checked = false;
+      document.getElementById('inputToolExt').checked = false;
+      document.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
+
+      setTimeout(() => { alertSuccess.style.display = 'none'; }, 4000);
+
+    } catch (err) {
+      alertError.textContent = "Échec de l'envoi : " + err.message;
+      alertError.style.display = 'block';
+    } finally {
+      btn.disabled = false;
+      btn.textContent = "Transmettre le diagnostic";
+    }
+  }
+ 
+
+  function escapeHtml(str) {
+    if (!str) return '';
+    return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  }
+</script>
+
+</body>
+</html>
